@@ -3,6 +3,7 @@ const express = require('express');
 const admin = require('firebase-admin');
 const path = require('path');
 const session = require('express-session');
+const FirebaseStore = require('connect-session-firebase')(session);
 
 const app = express();
 const PORT = 3000;
@@ -32,13 +33,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+const store = new FirebaseStore({
+    database: db
+});
 // Session middleware
 app.use(session({
-  secret: 'your-secret-key-here', 
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false } // set true jika menggunakan HTTPS
+    store: store, // 👈 Gunakan Firebase sebagai penyimpan sesi
+    secret: process.env.SESSION_SECRET || 'a-very-strong-secret-key', // 🚨 AMBIL DARI .env!
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // true jika di production (HTTPS)
+        maxAge: 1000 * 60 * 60 * 24 * 7 // Cookie berlaku selama 7 hari
+    }
 }));
+// Jika aplikasi Anda berjalan di belakang proxy (seperti Nginx, Heroku, dll.)
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1); 
+}
 
 // Routes untuk halaman HTML
 
