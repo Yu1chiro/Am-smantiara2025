@@ -2,8 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
 const path = require('path');
-const session = require('express-session');
-const FirebaseStore = require('connect-session-firebase')(session);
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+
 
 const app = express();
 const PORT = 3000;
@@ -32,25 +33,7 @@ const db = admin.database();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-
-const store = new FirebaseStore({
-    database: db
-});
-// Session middleware
-app.use(session({
-    store: store, // 👈 Gunakan Firebase sebagai penyimpan sesi
-    secret: process.env.SESSION_SECRET || 'a-very-strong-secret-key', // 🚨 AMBIL DARI .env!
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-        secure: process.env.NODE_ENV === 'production', // true jika di production (HTTPS)
-        maxAge: 1000 * 60 * 60 * 24 * 7 // Cookie berlaku selama 7 hari
-    }
-}));
-// Jika aplikasi Anda berjalan di belakang proxy (seperti Nginx, Heroku, dll.)
-if (process.env.NODE_ENV === 'production') {
-    app.set('trust proxy', 1); 
-}
+app.use(cookieParser());
 
 // Routes untuk halaman HTML
 
@@ -70,11 +53,35 @@ app.get('/read/:encodedId', (req, res) => {
 
 
 // Middleware untuk proteksi route admin
+// Middleware untuk proteksi route admin (VERSI BARU)
 const adminAuth = (req, res, next) => {
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.redirect('/login'); // langsung arahkan ke /login
+  const token = req.cookies.token; // Ambil token dari cookie
+
+  if (!token) {
+    // Jika tidak ada token, langsung redirect
+    return res.redirect('/login');
   }
-  next();
+
+  try {
+    // Verifikasi token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Cek apakah rolenya admin
+    if (decoded.role !== 'admin') {
+      return res.redirect('/login');
+    }
+    
+    // Simpan data user dari token ke request untuk digunakan nanti
+    req.user = decoded; 
+    next(); // Lanjutkan ke route selanjutnya
+
+  } catch (error) {
+    // Jika token tidak valid atau expired
+    console.error("Auth error:", error.message);
+    // Hapus cookie yang tidak valid dan redirect
+    res.clearCookie('token');
+    return res.redirect('/login');
+  }
 };
 
 app.get('/admin', adminAuth, (req, res) => {
@@ -138,6 +145,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Endpoint untuk login Google Auth
+// Endpoint untuk login Google Auth
 app.post('/api/login', async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -151,16 +159,31 @@ app.post('/api/login', async (req, res) => {
     const snapshot = await userRef.once('value');
     
     if (!snapshot.exists()) {
-      return res.json({
+      return res.status(403).json({ // Gunakan status code yang sesuai
         success: false,
-        message: 'Akun tidak ditemukan! Anda tidak memiliki akses untuk silahkan hubungi developer'
+        message: 'Akun tidak ditemukan! Anda tidak memiliki akses.'
       });
     }
 
     const userData = snapshot.val();
-    
-    // Simpan session
-    req.session.user = userData;
+
+    // --- PERUBAHAN UTAMA DI SINI ---
+    // 1. Buat JWT Token
+    // Kita hanya perlu menyimpan info esensial seperti uid dan role
+    const tokenPayload = { uid: userData.uid, role: userData.role, name: userData.name };
+    const token = jwt.sign(
+      tokenPayload, 
+      process.env.JWT_SECRET, // Kunci rahasia dari .env
+      { expiresIn: '7d' }    // Token berlaku selama 7 hari
+    );
+
+    // 2. Set token di HttpOnly cookie
+    res.cookie('token', token, {
+      httpOnly: true, // Agar tidak bisa diakses dari JavaScript client (lebih aman)
+      secure: process.env.NODE_ENV === 'production', // true jika di HTTPS
+      maxAge: 1000 * 60 * 60 * 24 * 7 // Cookie berlaku 7 hari (sama dengan token)
+    });
+    // --- AKHIR PERUBAHAN ---
 
     res.json({
       success: true,
@@ -178,33 +201,38 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Endpoint untuk logout
+// Endpoint untuk logout (VERSI BARU)
 app.post('/api/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({
-        success: false,
-        message: 'Terjadi kesalahan saat logout'
-      });
-    }
-    res.json({
-      success: true,
-      message: 'Logout berhasil'
-    });
+  res.clearCookie('token'); // Hapus cookie token
+  res.json({
+    success: true,
+    message: 'Logout berhasil'
   });
 });
 
 // Endpoint untuk cek status login
-app.get('/api/user', (req, res) => {
-  if (req.session.user) {
-    res.json({
-      success: true,
-      user: req.session.user
-    });
-  } else {
-    res.json({
-      success: false,
-      message: 'User belum login'
-    });
+// Endpoint untuk cek status login (VERSI BARU)
+app.get('/api/user', async (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.json({ success: false, message: 'User belum login' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Ambil data lengkap user dari database menggunakan uid dari token
+    const userRef = db.ref('users/' + decoded.uid);
+    const snapshot = await userRef.once('value');
+
+    if (!snapshot.exists()) {
+        return res.json({ success: false, message: 'User tidak ditemukan di DB' });
+    }
+
+    res.json({ success: true, user: snapshot.val() });
+  } catch (error) {
+    return res.json({ success: false, message: 'Token tidak valid atau expired' });
   }
 });
 
