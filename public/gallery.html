@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Galeri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        #editor-panel { transition: transform 0.3s ease-in-out; }
+        #editor-backdrop { transition: opacity 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-100">
+    <div id="app-container">
+        <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-4">
+                        <a href="/admin" class="text-sm text-slate-600 hover:text-indigo-600 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                            Kembali
+                        </a>
+                    </div>
+                    <button id="create-new-btn" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        Create
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <div id="loading" class="text-center p-8 text-slate-500">Memuat data...</div>
+                    <table id="gallery-table" class="min-w-full divide-y divide-slate-200 hidden">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-24">Thumbnail</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Judul</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tanggal Dibuat</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gallery-tbody" class="bg-white divide-y divide-slate-200"></tbody>
+                    </table>
+                    <div id="no-gallery-items" class="hidden text-center p-8">
+                        <p class="text-slate-500">Belum ada item di galeri. Silakan klik "Tambah Item Baru".</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editor-backdrop" class="fixed inset-0 bg-black bg-opacity-60 z-40 hidden opacity-0"></div>
+    <div id="editor-panel" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white shadow-xl z-50 transform translate-x-full flex flex-col">
+        <div class="flex justify-between items-center p-4 border-b border-slate-200 bg-slate-50">
+            <h2 id="modal-title" class="text-lg font-semibold text-slate-900">Upload Gambar</h2>
+            <button id="close-panel-btn" class="text-slate-500 hover:text-slate-800"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+        </div>
+        <div class="flex-grow p-6 overflow-y-auto">
+            <form id="gallery-form" class="space-y-6">
+                <input type="hidden" id="gallery-item-id">
+                <div>
+                    <label for="title" class="block text-sm font-medium text-slate-700">Judul:</label>
+                    <input type="text" id="title" name="title" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="thumbnail" class="block text-sm font-medium text-slate-700">Link Thumbnail :</label>
+                    <input type="url" id="thumbnail" name="thumbnail" required placeholder="https://example.com/image.jpg" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <img id="thumbnail-preview" src="" alt="Preview Thumbnail" class="mt-3 rounded-lg border border-slate-200 hidden w-full h-auto max-h-60 object-contain bg-slate-50">
+                </div>
+                <div>
+                    <label for="description" class="block text-sm font-medium text-slate-700">Date :</label>
+                <input type="text" id="description" name="description" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </form>
+        </div>
+        <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
+            <button type="button" id="cancel-btn" class="bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Batal</button>
+            <button type="submit" form="gallery-form" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium">Simpan Perubahan</button>
+        </div>
+    </div>
+    
+    <script>
+        const editorPanel = document.getElementById('editor-panel');
+        const editorBackdrop = document.getElementById('editor-backdrop');
+        const createBtn = document.getElementById('create-new-btn');
+        const closePanelBtn = document.getElementById('close-panel-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const galleryForm = document.getElementById('gallery-form');
+        const modalTitle = document.getElementById('modal-title');
+        const galleryTable = document.getElementById('gallery-table');
+        const galleryTbody = document.getElementById('gallery-tbody');
+        const loadingIndicator = document.getElementById('loading');
+        const noItemsMsg = document.getElementById('no-gallery-items');
+        const thumbnailInput = document.getElementById('thumbnail');
+        const thumbnailPreview = document.getElementById('thumbnail-preview');
+
+        const togglePanel = (show) => {
+            if (show) {
+                editorBackdrop.classList.remove('hidden');
+                setTimeout(() => {
+                    editorBackdrop.classList.remove('opacity-0');
+                    editorPanel.classList.remove('translate-x-full');
+                }, 10);
+            } else {
+                editorBackdrop.classList.add('opacity-0');
+                editorPanel.classList.add('translate-x-full');
+                setTimeout(() => editorBackdrop.classList.add('hidden'), 300);
+            }
+        };
+
+        createBtn.addEventListener('click', () => {
+            galleryForm.reset();
+            document.getElementById('gallery-item-id').value = '';
+            modalTitle.textContent = 'Tambah Item Baru';
+            thumbnailPreview.classList.add('hidden');
+            togglePanel(true);
+        });
+        closePanelBtn.addEventListener('click', () => togglePanel(false));
+        cancelBtn.addEventListener('click', () => togglePanel(false));
+        editorBackdrop.addEventListener('click', () => togglePanel(false));
+
+        thumbnailInput.addEventListener('input', () => {
+            if (thumbnailInput.value && thumbnailInput.checkValidity()) {
+                thumbnailPreview.src = thumbnailInput.value;
+                thumbnailPreview.classList.remove('hidden');
+            } else {
+                thumbnailPreview.classList.add('hidden');
+            }
+        });
+
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                if (!data.success || data.user.role !== 'admin') { window.location.href = '/login'; return; }
+            } catch(e) { window.location.href = '/login'; return; }
+            loadGalleryItems();
+        });
+
+        async function loadGalleryItems() {
+            loadingIndicator.style.display = 'block';
+            galleryTable.classList.add('hidden');
+            galleryTbody.innerHTML = '';
+            noItemsMsg.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/gallery');
+                const result = await response.json();
+                if (result.success && Object.keys(result.data).length > 0) {
+                    const items = Object.values(result.data).sort((a, b) => b.createdAt - a.createdAt);
+                    items.forEach(createGalleryRow);
+                    galleryTable.classList.remove('hidden');
+                } else {
+                    noItemsMsg.classList.remove('hidden');
+                }
+            } catch (error) { Swal.fire('Error', 'Gagal memuat data galeri.', 'error'); } 
+            finally { loadingIndicator.style.display = 'none'; }
+        }
+
+        function createGalleryRow(item) {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-slate-50';
+            row.id = `gallery-item-${item.id}`;
+            const createdDate = item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-';
+            
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <img src="${item.thumbnail}" alt="${item.title}" class="h-10 w-16 object-cover rounded-md">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-semibold text-slate-900">${item.title}</div>
+                    <div class="text-sm text-slate-500">${item.description.substring(0, 50)}...</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${createdDate}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <button class="edit-btn p-1 text-amber-500 hover:text-amber-700" title="Edit" data-item='${JSON.stringify(item)}'><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
+                    <button class="delete-btn p-1 text-red-500 hover:text-red-700" title="Hapus" data-id="${item.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button>
+                </td>
+            `;
+            galleryTbody.appendChild(row);
+        }
+
+        galleryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('gallery-item-id').value;
+            const itemData = {
+                title: document.getElementById('title').value,
+                thumbnail: document.getElementById('thumbnail').value,
+                description: document.getElementById('description').value
+            };
+            const isUpdating = id !== '';
+            const url = isUpdating ? `/api/gallery/${id}` : '/api/gallery';
+            const method = isUpdating ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(itemData) });
+                const result = await response.json();
+                if (result.success) { togglePanel(false); Swal.fire('Sukses!', result.message, 'success'); loadGalleryItems(); } 
+                else { Swal.fire('Gagal!', result.message, 'error'); }
+            } catch (error) { Swal.fire('Error!', 'Terjadi kesalahan koneksi.', 'error'); }
+        });
+
+        galleryTbody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-btn');
+            const deleteBtn = e.target.closest('.delete-btn');
+
+            if (editBtn) {
+                const item = JSON.parse(editBtn.dataset.item);
+                document.getElementById('gallery-item-id').value = item.id;
+                document.getElementById('title').value = item.title;
+                document.getElementById('thumbnail').value = item.thumbnail;
+                document.getElementById('description').value = item.description;
+                thumbnailPreview.src = item.thumbnail;
+                thumbnailPreview.classList.remove('hidden');
+                modalTitle.textContent = 'Edit Item Galeri';
+                togglePanel(true);
+            }
+
+            if (deleteBtn) {
+                const id = deleteBtn.dataset.id;
+                Swal.fire({
+                    title: 'Anda yakin ingin menghapus?',
+                    text: "Item ini akan dihapus permanen!",
+                    icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33',
+                    confirmButtonText: 'Ya, hapus!', cancelButtonText: 'Batal'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await fetch(`/api/gallery/${id}`, { method: 'DELETE' });
+                            const resJson = await response.json();
+                            if (resJson.success) { Swal.fire('Terhapus!', 'Item berhasil dihapus.', 'success'); loadGalleryItems(); } 
+                            else { Swal.fire('Gagal!', resJson.message, 'error'); }
+                        } catch(error) { Swal.fire('Error!', 'Gagal menghapus data.', 'error'); }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
