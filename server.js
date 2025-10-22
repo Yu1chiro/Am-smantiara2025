@@ -52,7 +52,6 @@ app.get('/read/:encodedId', (req, res) => {
 });
 
 
-// Middleware untuk proteksi route admin
 // Middleware untuk proteksi route admin (VERSI BARU)
 const adminAuth = (req, res, next) => {
   const token = req.cookies.token; // Ambil token dari cookie
