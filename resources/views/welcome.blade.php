@@ -593,9 +593,9 @@
             [hamburger, closeBtn, overlay].forEach(el => el?.addEventListener('click', toggleMenu));
 
             // --- LOAD MORE LOGIC ---
-            let articleSkip = 6;
+            let articleSkip = 5;
             let memberSkip = 5;
-            let cerpenSkip = 6;
+            let cerpenSkip = 5;
 
             // 1. Load More Activity / Article
             const btnActivity = document.getElementById('load-more-activity');
@@ -648,7 +648,7 @@
 
                                 container.insertAdjacentHTML('beforeend', html);
                             });
-                            articleSkip += 6;
+                            articleSkip += 5;
                             btnActivity.classList.remove('hidden');
                         } else {
                             btnActivity.textContent = "Semua kegiatan sudah ditampilkan";
@@ -696,7 +696,7 @@
                                 </div>`;
                                 container.insertAdjacentHTML('beforeend', html);
                             });
-                            cerpenSkip += 6;
+                            cerpenSkip += 5;
                             btnCerpen.classList.remove('hidden');
                         } else {
                             btnCerpen.textContent = "Semua cerpen sudah dimuat";

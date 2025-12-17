@@ -15,10 +15,10 @@ class PublicController extends Controller
         // latest('tanggal') = Terbaru ke Terlama (31 Des -> 1 Jan)
         // oldest('tanggal') = Terlama ke Terbaru (1 Jan -> 31 Des)
         
-        $articles = Article::latest('tanggal')->take(6)->get();
+        $articles = Article::latest('tanggal')->take(5)->get();
         
         $members = Member::inRandomOrder()->take(5)->get();
-        $cerpens = Cerpen::latest()->take(6)->get();
+        $cerpens = Cerpen::latest()->take(5)->get();
 
         return view('welcome', compact('articles', 'members', 'cerpens'));
     }
@@ -39,12 +39,12 @@ class PublicController extends Controller
 
     public function loadMoreArticles(Request $request)
     {
-        $skip = $request->input('skip', 6);
+        $skip = $request->input('skip', 5);
         
         // UBAH DISINI JUGA: Agar konsisten saat tombol 'Load More' diklik
         $articles = Article::latest('tanggal') // Mengurutkan berdasarkan input tanggal manual
                         ->skip($skip)
-                        ->take(6)
+                        ->take(5)
                         ->get();
                         
         return response()->json($articles);
@@ -63,8 +63,8 @@ class PublicController extends Controller
 
     public function loadMoreCerpens(Request $request)
     {
-        $skip = $request->input('skip', 6);
-        $cerpens = Cerpen::latest()->skip($skip)->take(6)->get();
+        $skip = $request->input('skip', 5);
+        $cerpens = Cerpen::latest()->skip($skip)->take(5)->get();
         return response()->json($cerpens);
     }
 }
