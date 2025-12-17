@@ -361,7 +361,7 @@
                 </p>
             </div>
 
-            <div id="activity-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div id="activity-container" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 @foreach ($articles as $article)
                     <article
                         class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full overflow-hidden">
@@ -503,7 +503,7 @@
             </div>
 
             <div id="division-container"
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center">
+                class="grid grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
                 @foreach ($members as $member)
                     <div class="flex-col w-full break-inside-avoid mb-4 group cursor-pointer text-center">
                         <div
@@ -593,9 +593,9 @@
             [hamburger, closeBtn, overlay].forEach(el => el?.addEventListener('click', toggleMenu));
 
             // --- LOAD MORE LOGIC ---
-            let articleSkip = 5;
+            let articleSkip = 6;
             let memberSkip = 5;
-            let cerpenSkip = 5;
+            let cerpenSkip = 6;
 
             // 1. Load More Activity / Article
             const btnActivity = document.getElementById('load-more-activity');
@@ -648,7 +648,7 @@
 
                                 container.insertAdjacentHTML('beforeend', html);
                             });
-                            articleSkip += 5;
+                            articleSkip += 6;
                             btnActivity.classList.remove('hidden');
                         } else {
                             btnActivity.textContent = "Semua kegiatan sudah ditampilkan";
@@ -696,7 +696,7 @@
                                 </div>`;
                                 container.insertAdjacentHTML('beforeend', html);
                             });
-                            cerpenSkip += 5;
+                            cerpenSkip += 6;
                             btnCerpen.classList.remove('hidden');
                         } else {
                             btnCerpen.textContent = "Semua cerpen sudah dimuat";
