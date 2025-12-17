@@ -503,7 +503,7 @@
             </div>
 
             <div id="division-container"
-                class="grid grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
+                class="grid grid-cols-2 lg:grid-cols-4 gap-6 justify-center">
                 @foreach ($members as $member)
                     <div class="flex-col w-full break-inside-avoid mb-4 group cursor-pointer text-center">
                         <div
