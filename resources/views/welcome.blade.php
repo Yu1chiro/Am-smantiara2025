@@ -7,12 +7,10 @@
     <title>AM Smantiara - 2025</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
     <link rel="shortcut icon"
         href="https://ucarecdn.com/aacd603b-4659-4aa0-91af-cda6275f6c18/WhatsAppImage20250911at100314_cd8dff09.jpg"
         type="image/x-icon">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     
     <style>
         .blog-card {
