@@ -13,22 +13,7 @@
         href="https://ucarecdn.com/aacd603b-4659-4aa0-91af-cda6275f6c18/WhatsAppImage20250911at100314_cd8dff09.jpg"
         type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1E40AF',
-                        secondary: '#3730A3',
-                        accent: '#059669',
-                        gold: '#F59E0B',
-                        navy: '#1E3A8A',
-                        emerald: '#065F46'
-                    }
-                }
-            }
-        }
-    </script>
+    
     <style>
         .blog-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;

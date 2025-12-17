@@ -13,22 +13,7 @@
         href="https://ucarecdn.com/aacd603b-4659-4aa0-91af-cda6275f6c18/WhatsAppImage20250911at100314_cd8dff09.jpg"
         type="image/x-icon">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1E40AF',
-                        secondary: '#3730A3',
-                        accent: '#059669',
-                        gold: '#F59E0B',
-                        navy: '#1E3A8A',
-                        emerald: '#065F46'
-                    }
-                }
-            }
-        }
-    </script>
+    
     <style>
         .pattern-dots {
             background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
