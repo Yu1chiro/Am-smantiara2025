@@ -606,7 +606,7 @@
                 btnActivity.classList.add('hidden');
                 skeleton.classList.remove('hidden');
 
-                fetch(`/api/articles?skip=${articleSkip}`)
+                fetch(`/articles?skip=${articleSkip}`)
                     .then(r => r.json())
                     .then(data => {
                         skeleton.classList.add('hidden');
@@ -671,7 +671,7 @@
                 btnCerpen.classList.add('hidden');
                 skeleton.classList.remove('hidden');
 
-                fetch(`/api/cerpens?skip=${cerpenSkip}`)
+                fetch(`/cerpens?skip=${cerpenSkip}`)
                     .then(r => r.json())
                     .then(data => {
                         skeleton.classList.add('hidden');
@@ -709,7 +709,7 @@
             // 3. Load More Member (Simple Logic)
             const btnMember = document.getElementById('load-more-member');
             btnMember?.addEventListener('click', () => {
-                fetch(`/api/members?skip=${memberSkip}`)
+                fetch(`/members?skip=${memberSkip}`)
                     .then(r => r.json())
                     .then(data => {
                         if (data.length > 0) {
