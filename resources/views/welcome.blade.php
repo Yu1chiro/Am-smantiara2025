@@ -724,6 +724,8 @@
             });
 
             // 3. Load More Member (Simple Logic)
+            // 3. Load More Member (Simple Logic)
+            // 3. Load More Member (Simple Logic)
             const btnMember = document.getElementById('load-more-member');
             btnMember?.addEventListener('click', () => {
                 fetch(`/api/members?skip=${memberSkip}`)
