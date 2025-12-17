@@ -17,7 +17,7 @@ class PublicController extends Controller
         
         $articles = Article::latest('tanggal')->take(6)->get();
         
-        $members = Member::inRandomOrder()->take(5)->get();
+       $members = Member::oldest()->take(5)->get();
         $cerpens = Cerpen::latest()->take(6)->get();
 
         return view('welcome', compact('articles', 'members', 'cerpens'));
@@ -52,13 +52,16 @@ class PublicController extends Controller
 
   public function loadMoreMembers(Request $request)
     {
-        $skip = $request->input('skip', 5);
-        
-        // PENTING: Ubah disini juga agar tombol "Load More" konsisten
-        // Mengambil data member selanjutnya tetap dengan urutan terlama
-        $members = Member::oldest()->skip($skip)->take(5)->get();
-        
-        return response()->json($members);
+        // Pastikan default skip sesuai dengan jumlah data awal (5)
+    $skip = $request->input('skip', 5);
+    
+    // PENTING: Gunakan oldest() juga disini
+    $members = Member::oldest()
+                    ->skip($skip)
+                    ->take(5) 
+                    ->get();
+    
+    return response()->json($members);
     }
 
     public function loadMoreCerpens(Request $request)
